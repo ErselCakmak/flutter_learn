@@ -1,21 +1,20 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'dio_test_model.dart';
+part of 'data_model.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-DioTestModel _$DioTestModelFromJson(Map<String, dynamic> json) => DioTestModel(
-      iD: json['iD'] as String?,
+DataModel _$DataModelFromJson(Map<String, dynamic> json) => DataModel(
+      id: json['id'] as String?,
       userID: json['userID'] as String?,
       text: json['text'] as String?,
       date: json['date'] as String?,
     );
 
-Map<String, dynamic> _$DioTestModelToJson(DioTestModel instance) =>
-    <String, dynamic>{
-      'iD': instance.iD,
+Map<String, dynamic> _$DataModelToJson(DataModel instance) => <String, dynamic>{
+      'id': instance.id,
       'userID': instance.userID,
       'text': instance.text,
       'date': instance.date,

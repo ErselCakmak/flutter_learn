@@ -14,6 +14,9 @@ class CustomColors {
 }
 
 class CustomPaddings {
+  final p10 = const EdgeInsets.all(10);
+  final p15 = const EdgeInsets.all(15);
+  final p20 = const EdgeInsets.all(20);
   final pv10 = const EdgeInsets.symmetric(vertical: 10);
   final pv15 = const EdgeInsets.symmetric(vertical: 15);
   final pv20 = const EdgeInsets.symmetric(vertical: 20);
