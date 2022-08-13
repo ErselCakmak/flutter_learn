@@ -1,20 +1,28 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'package:dio/dio.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../service/network_manager.dart';
-import '../home/model/data_model.dart';
-import '../home/model/failure_model.dart';
+import '../../../core/crypt.dart';
+import '../../../service/network_manager.dart';
+import '../../../service/project_network_manager.dart';
+import '../model/data_model.dart';
+import '../model/failure_model.dart';
 
 part 'home_state.dart';
 
 class HomeCubit extends Cubit<HomeState> {
   HomeCubit() : super(HomeInitial());
 
+  final INetworkManager networkManager = INetworkManager(ProjectNetworkManager.instance.service);
+
   List<DataModel>? items;
 
-  Future<void> fetchData(INetworkManager networkManager, FormData formData) async {
+  Map<String, dynamic> data = {
+    'frmID': Crypt().encrypt("dioTest"),
+    'id': Crypt().encrypt("1"),
+    'token': Crypt().encrypt("nRJZ3ctCZVAWzFTA")
+  };
+
+  Future<void> fetchData(Map<String, dynamic>? formData) async {
     emit(FetchLoading());
     try {
       final response = await networkManager.fetchData<DataModel, DataModel>(formData, model: DataModel());
@@ -25,6 +33,4 @@ class HomeCubit extends Cubit<HomeState> {
       print("failure : $err");
     }
   }
-
-  Future<void> itemDetail(String id) async {}
 }

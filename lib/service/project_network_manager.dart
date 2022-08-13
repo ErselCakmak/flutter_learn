@@ -1,12 +1,12 @@
-import 'package:dio/dio.dart';
+import 'package:http/http.dart' as http;
 
 class ProjectNetworkManager {
   ProjectNetworkManager._() {
-    _dio = Dio(BaseOptions(baseUrl: 'http://appkutusu.com/oacademy/'));
+    _client = http.Client();
   }
-  late final Dio _dio;
+  late final _client;
 
   static ProjectNetworkManager instance = ProjectNetworkManager._();
 
-  Dio get service => _dio;
+  http.Client get service => _client;
 }

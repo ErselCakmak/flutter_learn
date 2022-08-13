@@ -9,6 +9,7 @@ class AppConstant {
 
   AppConstant._init();
 
+  final String baseUrl = "https://appkutusu.com/oacademy/process";
   final int queryTimeOut = 10;
   final String queryKey = 'nRJZ3ctCZVAWzFTA';
 
