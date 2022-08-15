@@ -19,52 +19,56 @@ class HomeView extends StatefulWidget {
 class _HomeViewState extends HomeViewModel {
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<HomeCubit>(
-      create: (context) => HomeCubit()..fetchData(formData),
-      child: BlocBuilder<HomeCubit, HomeState>(
-        builder: (context, state) {
-          if (state is FetchLoading) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          } else if (state is FetchError) {
-            return Center(child: Text(state.failure.message));
-          } else if (state is FetchLoaded) {
-            final items = state.items;
-            return Scaffold(
-              appBar: AppBar(),
-              body: RefreshIndicator(
-                onRefresh: () async => await context.read<HomeCubit>().fetchData(formData),
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  child: (state is FetchLoading)
-                      ? const Center(
-                          child: CircularProgressIndicator(),
-                        )
-                      : items.isEmpty
-                          ? const Center(child: Text('No Data'))
-                          : Column(
-                              children: [
-                                Padding(padding: AppConstant.instance.padding.pv30),
-                                Padding(
-                                  padding: AppConstant.instance.padding.ph20,
-                                  child: ListView.builder(
-                                      shrinkWrap: true,
-                                      physics: const NeverScrollableScrollPhysics(),
-                                      itemCount: items.length,
-                                      itemBuilder: (context, index) {
-                                        return _BuildCard(model: items[index], formData: formData);
-                                      }),
-                                ),
-                              ],
-                            ),
+    return WillPopScope(
+      onWillPop: () async => false,
+      child: BlocProvider<HomeCubit>(
+        create: (context) => HomeCubit()..fetchData(formData),
+        child: BlocBuilder<HomeCubit, HomeState>(
+          builder: (context, state) {
+            if (state is FetchLoading) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            } else if (state is FetchError) {
+              return Center(child: Text(state.failure.message));
+            } else if (state is FetchLoaded) {
+              final items = state.items;
+              return Scaffold(
+                appBar: AppBar(),
+                body: RefreshIndicator(
+                  onRefresh: () async => await context.read<HomeCubit>().fetchData(formData),
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    child: (state is FetchLoading)
+                        ? const Center(
+                            child: CircularProgressIndicator(),
+                          )
+                        : items.isEmpty
+                            ? const Center(child: Text('No Data'))
+                            : Column(
+                                children: [
+                                  const Text("Test List"),
+                                  Padding(padding: AppConstant.instance.padding.pv30),
+                                  Padding(
+                                    padding: AppConstant.instance.padding.ph20,
+                                    child: ListView.builder(
+                                        shrinkWrap: true,
+                                        physics: const NeverScrollableScrollPhysics(),
+                                        itemCount: items.length,
+                                        itemBuilder: (context, index) {
+                                          return _BuildCard(model: items[index], formData: formData);
+                                        }),
+                                  ),
+                                ],
+                              ),
+                  ),
                 ),
-              ),
-            );
-          } else {
-            return const SizedBox.shrink();
-          }
-        },
+              );
+            } else {
+              return const SizedBox.shrink();
+            }
+          },
+        ),
       ),
     );
   }
@@ -93,20 +97,8 @@ class _BuildCard extends StatelessWidget with NavManager {
         child: BlocBuilder<HomeCubit, HomeState>(
           builder: (context, state) {
             return ListTile(
-              onTap: () async {
-                final response = await navToRes(
-                    context,
-                    HomeDetailView(
-                      id: _model.id ?? '',
-                      text: _model.text ?? '',
-                      date: _model.date ?? '',
-                    ),
-                    true);
-
-                if (response == true) {
-                  // ignore: use_build_context_synchronously
-                  context.read<HomeCubit>().fetchData(_formData);
-                }
+              onTap: () {
+                context.read<HomeCubit>().pageRoute(context, HomeDetailView(data: _model), _formData);
               },
               contentPadding: EdgeInsets.zero,
               leading: const SizedBox(

@@ -34,7 +34,6 @@ class INetworkManager extends NetworkManager {
             );
 
         if (response.statusCode == HttpStatus.ok || response.statusCode == HttpStatus.created) {
-          ToastMessage.showToast("Başarılı!", ToastType.success.name);
           final jsonBody = response.body;
           if (jsonBody.isNotEmpty) {
             return (json.decode(jsonBody) as List).map((json) => model.fromJson(json)).cast<T>().toList();
@@ -66,7 +65,6 @@ class INetworkManager extends NetworkManager {
             );
 
         if (response.statusCode == HttpStatus.ok || response.statusCode == HttpStatus.created) {
-          ToastMessage.showToast("Başarılı!", ToastType.success.name);
           final jsonBody = response.body;
           if (jsonBody.isNotEmpty) {
             return (json.decode(jsonBody) as List).map((json) => model.fromJson(json)).cast<T>().toList();

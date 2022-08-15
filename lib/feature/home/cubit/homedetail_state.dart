@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 part of 'homedetail_cubit.dart';
 
 abstract class HomedetailState extends Equatable {
@@ -39,4 +40,27 @@ class SaveError extends HomedetailState {
 
   @override
   List<Object> get props => [failure];
+}
+
+class ShowMessage extends HomedetailState {
+  final String message;
+  final String type;
+
+  const ShowMessage({
+    required this.message,
+    required this.type,
+  });
+
+  @override
+  List<Object> get props => [message, type];
+
+  ShowMessage copyWith({
+    String? message,
+    String? type,
+  }) {
+    return ShowMessage(
+      message: message ?? this.message,
+      type: type ?? this.type,
+    );
+  }
 }

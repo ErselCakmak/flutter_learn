@@ -4,7 +4,7 @@ class ProjectNetworkManager {
   ProjectNetworkManager._() {
     _client = http.Client();
   }
-  late final _client;
+  late final http.Client _client;
 
   static ProjectNetworkManager instance = ProjectNetworkManager._();
 

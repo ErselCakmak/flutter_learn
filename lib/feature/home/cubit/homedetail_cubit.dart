@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/info_message.dart';
 import '../../../service/network_manager.dart';
 import '../../../service/project_network_manager.dart';
 import '../../home/model/response_model.dart';
@@ -22,6 +23,10 @@ class HomedetailCubit extends Cubit<HomedetailState> {
   Future<void> save(Map<String, dynamic>? formData) async {
     emit(SaveLoading());
     final response = await _networkManager.saveData<ResponseModel, ResponseModel>(formData, model: const ResponseModel());
+
     emit(SaveLoaded(items: response));
+    if (response?[0].message == "OK") {
+      emit(ShowMessage(message: 'Başarıyla kaydedildi', type: ToastType.success.name));
+    }
   }
 }

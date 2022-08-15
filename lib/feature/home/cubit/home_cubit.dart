@@ -1,7 +1,9 @@
 import 'package:equatable/equatable.dart';
+import 'package:fellow/fellow.dart';
+import 'package:fellow/utility/page_animation.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../core/crypt.dart';
 import '../../../service/network_manager.dart';
 import '../../../service/project_network_manager.dart';
 import '../model/data_model.dart';
@@ -14,14 +16,6 @@ class HomeCubit extends Cubit<HomeState> {
 
   final INetworkManager networkManager = INetworkManager(ProjectNetworkManager.instance.service);
 
-  List<DataModel>? items;
-
-  Map<String, dynamic> data = {
-    'frmID': Crypt().encrypt("dioTest"),
-    'id': Crypt().encrypt("1"),
-    'token': Crypt().encrypt("nRJZ3ctCZVAWzFTA")
-  };
-
   Future<void> fetchData(Map<String, dynamic>? formData) async {
     emit(FetchLoading());
     try {
@@ -31,6 +25,13 @@ class HomeCubit extends Cubit<HomeState> {
       emit(FetchError(failure: err));
     } catch (err) {
       print("failure : $err");
+    }
+  }
+
+  void pageRoute(BuildContext context, Widget page, Map<String, dynamic> formData) async {
+    final response = await context.navToPage(page, type: SlideType.LEFT);
+    if (response == true) {
+      await fetchData(formData);
     }
   }
 }
