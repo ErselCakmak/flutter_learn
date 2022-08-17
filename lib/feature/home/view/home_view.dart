@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_learn/feature/home/viewModel/home_view_model.dart';
 
 import '../../../constant/app_constant.dart';
-
 import '../cubit/home_cubit.dart';
 import '../model/data_model.dart';
-
 import 'home_detail_view.dart';
 
 class HomeView extends StatefulWidget {
@@ -16,57 +13,80 @@ class HomeView extends StatefulWidget {
   State<HomeView> createState() => _HomeViewState();
 }
 
-class _HomeViewState extends HomeViewModel {
+class _HomeViewState extends State<HomeView> {
+  bool dataIsLoading = false;
+  late ScrollController scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    scrollController = ScrollController();
+  }
+
+  void _listenScroll(BuildContext context) {
+    scrollController.addListener(() {
+      if (!scrollController.hasClients) return;
+
+      // if (scrollController.position.maxScrollExtent >= (scrollController.offset * .9)) {
+      //   context.read<HomeCubit>().loadData();
+      // }
+      if (scrollController.position.pixels > scrollController.position.maxScrollExtent) {
+        context.read<HomeCubit>().loadData();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async => false,
       child: BlocProvider<HomeCubit>(
-        create: (context) => HomeCubit()..fetchData(formData),
-        child: BlocBuilder<HomeCubit, HomeState>(
+        create: (context) => HomeCubit()..loadData(),
+        child: BlocConsumer<HomeCubit, HomeState>(
+          listener: (context, state) {
+            if (state.firstFetched) {
+              _listenScroll(context);
+            }
+          },
           builder: (context, state) {
-            if (state is FetchLoading) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            } else if (state is FetchError) {
-              return Center(child: Text(state.failure.message));
-            } else if (state is FetchLoaded) {
-              final items = state.items;
-              return Scaffold(
-                appBar: AppBar(),
-                body: RefreshIndicator(
-                  onRefresh: () async => await context.read<HomeCubit>().fetchData(formData),
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    child: (state is FetchLoading)
+            if (state.status == FetchStatus.initial) {
+              return const _LoadingIndicator();
+            } else if (state.status == FetchStatus.failure) {
+              return const Center(child: Text("Bir hata oluştu"));
+            }
+            return Scaffold(
+              appBar: AppBar(),
+              body: SafeArea(
+                child: RefreshIndicator(
+                  onRefresh: () async => context.read<HomeCubit>().refreshData(),
+                  child: Padding(
+                    padding: AppConstant.instance.padding.ph20,
+                    child: (state.data == null)
                         ? const Center(
-                            child: CircularProgressIndicator(),
+                            child: Text('Veri bulunamadı'),
                           )
-                        : items.isEmpty
-                            ? const Center(child: Text('No Data'))
-                            : Column(
-                                children: [
-                                  const Text("Test List"),
-                                  Padding(padding: AppConstant.instance.padding.pv30),
-                                  Padding(
-                                    padding: AppConstant.instance.padding.ph20,
-                                    child: ListView.builder(
-                                        shrinkWrap: true,
-                                        physics: const NeverScrollableScrollPhysics(),
-                                        itemCount: items.length,
-                                        itemBuilder: (context, index) {
-                                          return _BuildCard(model: items[index], formData: formData);
-                                        }),
-                                  ),
-                                ],
-                              ),
+                        : ListView.builder(
+                            controller: scrollController,
+                            physics: const BouncingScrollPhysics(),
+                            itemCount: state.allLoaded ? (state.data?.length ?? 0) : ((state.data?.length ?? 0) + 1),
+                            itemBuilder: (context, index) {
+                              if (index >= (state.data?.length ?? 0)) {
+                                return const _LoadingIndicator();
+                              } else {
+                                return _BuildCard(model: state.data![index]);
+                              }
+                            },
+                          ),
                   ),
                 ),
-              );
-            } else {
-              return const SizedBox.shrink();
-            }
+              ),
+            );
           },
         ),
       ),
@@ -74,17 +94,14 @@ class _HomeViewState extends HomeViewModel {
   }
 }
 
-class _BuildCard extends StatelessWidget with NavManager {
+class _BuildCard extends StatelessWidget {
   const _BuildCard({
     Key? key,
     required DataModel model,
-    required var formData,
   })  : _model = model,
-        _formData = formData,
         super(key: key);
 
   final DataModel _model;
-  final dynamic _formData;
 
   @override
   Widget build(BuildContext context) {
@@ -98,7 +115,7 @@ class _BuildCard extends StatelessWidget with NavManager {
           builder: (context, state) {
             return ListTile(
               onTap: () {
-                context.read<HomeCubit>().pageRoute(context, HomeDetailView(data: _model), _formData);
+                context.read<HomeCubit>().pageRoute(context, HomeDetailView(data: _model));
               },
               contentPadding: EdgeInsets.zero,
               leading: const SizedBox(
@@ -122,27 +139,16 @@ class _BuildCard extends StatelessWidget with NavManager {
   }
 }
 
-mixin NavManager {
-  navTo(BuildContext context, Widget widget, bool fullscreen) {
-    return Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) {
-          return widget;
-        },
-        fullscreenDialog: fullscreen,
-        settings: const RouteSettings(),
-      ),
-    );
-  }
+class _LoadingIndicator extends StatelessWidget {
+  const _LoadingIndicator({
+    Key? key,
+  }) : super(key: key);
 
-  Future<T?> navToRes<T>(BuildContext context, Widget widget, bool fullscreen) {
-    return Navigator.of(context).push<T>(
-      MaterialPageRoute(
-        builder: (context) {
-          return widget;
-        },
-        fullscreenDialog: fullscreen,
-        settings: const RouteSettings(),
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: CircularProgressIndicator(
+        strokeWidth: 5,
       ),
     );
   }

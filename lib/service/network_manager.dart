@@ -16,6 +16,7 @@ abstract class NetworkManager with ToastMessage {
 
   Future fetchData<T extends INetworkModel, R>(Map<String, dynamic>? formData, {required T model});
   Future saveData<T extends INetworkModel, R>(Map<String, dynamic>? formData, {required T model});
+  Future multiPartData<T extends INetworkModel, R>(Map<String, String> formData, {required T model, required dynamic filePath});
 }
 
 class INetworkManager extends NetworkManager {
@@ -68,6 +69,46 @@ class INetworkManager extends NetworkManager {
           final jsonBody = response.body;
           if (jsonBody.isNotEmpty) {
             return (json.decode(jsonBody) as List).map((json) => model.fromJson(json)).cast<T>().toList();
+          } else {
+            ToastMessage.showToast("Bir hata oluştu!", ToastType.error.name);
+          }
+        } else {
+          ToastMessage.showToast("Sunucuya ulaşılamıyor!", ToastType.error.name);
+        }
+      } on TimeoutException catch (_) {
+        ToastMessage.showToast("Bir hata oluştu!", ToastType.error.name);
+      } catch (error) {
+        _ShowDebug.showDioError(error, this);
+      }
+    }
+    return null;
+  }
+
+  @override
+  Future multiPartData<T extends INetworkModel, R>(Map<String, String> formData,
+      {required T model, required dynamic filePath}) async {
+    final bool networkConnection = await Connectivity().check();
+
+    if (networkConnection == false) {
+      ToastMessage.showToast("İnternet bağlantısı yok!", ToastType.error.name);
+    } else {
+      try {
+        Uri postUri = Uri.parse(AppConstant.instance.baseUrl);
+        http.MultipartRequest request = http.MultipartRequest("POST", postUri);
+
+        request.fields.addAll(formData);
+
+        http.MultipartFile file = await http.MultipartFile.fromPath('image', filePath);
+        request.files.add(file);
+
+        final response = await request.send().timeout(
+              Duration(seconds: AppConstant.instance.queryTimeOut),
+            );
+
+        if (response.statusCode == HttpStatus.ok || response.statusCode == HttpStatus.created) {
+          final res = await http.Response.fromStream(response);
+          if (res.body.isNotEmpty) {
+            return (json.decode(res.body) as List).map((json) => model.fromJson(json)).cast<T>().toList();
           } else {
             ToastMessage.showToast("Bir hata oluştu!", ToastType.error.name);
           }

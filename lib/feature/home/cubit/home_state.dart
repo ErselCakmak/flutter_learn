@@ -1,31 +1,69 @@
 part of 'home_cubit.dart';
 
-abstract class HomeState extends Equatable {
-  const HomeState();
+enum FetchStatus { initial, loading, success, failure }
 
-  @override
-  List<Object> get props => [];
-}
+class HomeState extends Equatable {
+  final List<DataModel>? data;
+  final bool allLoaded;
+  final FetchStatus status;
+  final bool firstFetched;
 
-class HomeInitial extends HomeState {}
-
-class FetchLoading extends HomeState {}
-
-class FetchLoaded extends HomeState {
-  final List<DataModel> items;
-
-  const FetchLoaded({
-    required this.items,
+  const HomeState({
+    this.status = FetchStatus.initial,
+    this.data,
+    this.allLoaded = false,
+    this.firstFetched = false,
   });
 
   @override
-  List<Object> get props => [items];
+  List<Object?> get props => [data, allLoaded, status];
+
+  HomeState copyWith({
+    List<DataModel>? data,
+    bool? allLoaded,
+    FetchStatus? status,
+    bool? firstFetched,
+  }) {
+    return HomeState(
+      data: data ?? this.data,
+      allLoaded: allLoaded ?? this.allLoaded,
+      status: status ?? this.status,
+      firstFetched: firstFetched ?? this.firstFetched,
+    );
+  }
+}
+
+class RefreshData extends HomeState {}
+
+/*
+class HomeInitial extends HomeState {}
+
+class FetchLoading extends HomeState {
+  final List<DataModel> oldData;
+  final bool isFirstFetch;
+
+  const FetchLoading(this.oldData, {this.isFirstFetch = false});
+}
+
+class FetchLoaded extends HomeState {
+  final List<DataModel> data;
+  final bool allLoaded;
+
+  const FetchLoaded({
+    required this.data,
+    this.allLoaded = false,
+  });
+
+  @override
+  List<Object> get props => [data, allLoaded];
 
   FetchLoaded copyWith({
-    List<DataModel>? items,
+    List<DataModel>? data,
+    bool? allLoaded,
   }) {
     return FetchLoaded(
-      items: items ?? this.items,
+      data: data ?? this.data,
+      allLoaded: allLoaded ?? this.allLoaded,
     );
   }
 }
@@ -40,3 +78,4 @@ class FetchError extends HomeState {
   @override
   List<Object> get props => [failure];
 }
+*/
