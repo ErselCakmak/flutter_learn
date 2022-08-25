@@ -27,9 +27,6 @@ class _HomeViewState extends State<HomeView> {
     scrollController.addListener(() {
       if (!scrollController.hasClients) return;
 
-      // if (scrollController.position.maxScrollExtent >= (scrollController.offset * .9)) {
-      //   context.read<HomeCubit>().loadData();
-      // }
       if (scrollController.position.pixels > scrollController.position.maxScrollExtent) {
         context.read<HomeCubit>().loadData();
       }
